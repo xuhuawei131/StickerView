@@ -27,7 +27,7 @@ public class StickerView extends View {
 
 
     private float[] mOriginPoints;
-    private float[] mPoints;
+    private float[] mPoints;//（0,1）左上角坐标、（2,3）右上角坐标、（4,5）左下角坐标、（6,7）右下角坐标、（8,9）中心位置坐标
     private RectF mOriginContentRect;
     private RectF mContentRect;
     private RectF mViewRect;
@@ -46,6 +46,8 @@ public class StickerView extends View {
     private float mStickerScaleSize = 1.0f;
 
     private OnStickerDeleteListener mOnStickerDeleteListener;
+
+    private boolean mInDelete = false;
 
     public StickerView(Context context) {
         this(context, null);
@@ -81,6 +83,7 @@ public class StickerView extends View {
         mDeleteWidth = mDeleteBitmap.getWidth();
         mDeleteHeight = mDeleteBitmap.getHeight();
 
+        setBackgroundResource(R.color.background_material_dark);
     }
 
     public void setWaterMark(@NonNull Bitmap bitmap) {
@@ -136,7 +139,7 @@ public class StickerView extends View {
 
         mMatrix.mapRect(mContentRect, mOriginContentRect);
         canvas.drawBitmap(mBitmap, mMatrix, mPaint);
-        if (mDrawController && isFocusable()) {
+        if (mDrawController && isFocusable()) {//画边框
             canvas.drawLine(mPoints[0], mPoints[1], mPoints[2], mPoints[3], mBorderPaint);
             canvas.drawLine(mPoints[2], mPoints[3], mPoints[4], mPoints[5], mBorderPaint);
             canvas.drawLine(mPoints[4], mPoints[5], mPoints[6], mPoints[7], mBorderPaint);
@@ -160,11 +163,16 @@ public class StickerView extends View {
         mDrawController = show;
     }
 
-
+    /**
+     * 是否点击了控制按钮
+     * @param x
+     * @param y
+     * @return
+     */
     private boolean isInController(float x, float y) {
         int position = 4;
         //while (position < 8) {
-            float rx = mPoints[position];
+            float rx = mPoints[position];//4,5 右下角坐标
             float ry = mPoints[position + 1];
             RectF rectF = new RectF(rx - mControllerWidth / 2,
                     ry - mControllerHeight / 2,
@@ -179,10 +187,16 @@ public class StickerView extends View {
 
     }
 
+    /**
+     * 是否在点击删除按钮
+     * @param x
+     * @param y
+     * @return
+     */
     private boolean isInDelete(float x, float y) {
         int position = 0;
         //while (position < 8) {
-        float rx = mPoints[position];
+        float rx = mPoints[position];//(0,1)左上角
         float ry = mPoints[position + 1];
         RectF rectF = new RectF(rx - mDeleteWidth / 2,
                 ry - mDeleteHeight / 2,
@@ -198,7 +212,7 @@ public class StickerView extends View {
     }
 
 
-    private boolean mInDelete = false;
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (!isFocusable()) {
@@ -252,6 +266,7 @@ public class StickerView extends View {
                         if (nowsc >= MIN_SCALE_SIZE && nowsc <= MAX_SCALE_SIZE) {
                             mMatrix.postScale(scale, scale, mPoints[8], mPoints[9]);
                             mStickerScaleSize = nowsc;
+
                         }
                     }
 
